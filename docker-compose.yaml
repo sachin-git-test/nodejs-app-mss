@@ -1,0 +1,9 @@
+services:
+  nodejsapp:
+    image: sachindockeregistry/nodejs_application:1
+    ports:
+    - "8082:9981"
+    networks:
+    - nodejsNetwork
+
+    
