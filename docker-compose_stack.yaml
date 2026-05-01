@@ -1,0 +1,41 @@
+services:
+  nodejsapp:
+    image: sachindockeregistry/nodejs_application:1
+    ports:
+      - "8082:9981"
+    networks:
+      - nodejsNetwork
+    deploy:
+      replicas: 2  # Run 2 instances
+      restart_policy:
+        condition: on-failure  # Restart only if the container exits with a non-zero exit code
+      update_config:
+        parallelism: 1  # Only one container updated at a time
+        delay: 10s  # Add a delay to avoid too many simultaneous updates
+        failure_action: rollback  # Rollback if update fails
+      placement:
+        # Add constraints if you want to force placement of this service
+        constraints: [node.role == worker]
+
+  nginxapp:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    networks:
+      - nginxNetwork
+    deploy:
+      mode: global  # Run one instance on every node
+      restart_policy:
+        condition: on-failure  # Restart on failure
+      update_config:
+        parallelism: 1  # Update one container at a time to avoid network disruptions
+        delay: 10s  # Delay between updates
+        failure_action: rollback  # Rollback if update fails
+      placement:
+        constraints: [node.role == worker]  # Can be customized to ensure it runs on worker nodes
+
+networks:
+  nodejsNetwork:
+    driver: overlay
+  nginxNetwork:
+    driver: overlay
